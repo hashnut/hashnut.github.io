@@ -47,7 +47,7 @@ comment : true
 	   }
 
 
-	![10-1](https://drive.google.com/open?id=1yUKB2HU1U-T3T4r6LCX7Ixivt1KY-9Ha)
+	![10-1](https://user-images.githubusercontent.com/26838115/44953107-4dff3d80-aeca-11e8-9aec-cebad8f1db3f.png)
 
 	0040101C 주소를 보면, **ESP**에 8을 더하여 Caller인 main()함수가 자신이 스택에 입력한 함수 파라미터를 직접 정리	 하고 있다. 
 	이 방식이 바로 cdecl 방식으로, 장점은 C 언어의 printf() 함수와 같이 가변 길이 파라미터를 전달할 수 있다는 것이다. 
@@ -76,7 +76,7 @@ comment : true
 	   }
 
 
-    ![10-2](https://drive.google.com/open?id=1lhZHK4hRiTLyaAMshLzqMY1uHPh6L7sq)
+    ![10-2](https://user-images.githubusercontent.com/26838115/44953114-7d15af00-aeca-11e8-905a-1de6283f51ee.png)
 
 	0040100A의 주소를 보면 **RETN 8**라는 명령어를 통해 호출된 함수(Callee)내부에서 스택을 정리해준다는 것을 알 수 있다.
 
