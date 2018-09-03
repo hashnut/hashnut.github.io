@@ -51,8 +51,325 @@ comment : true
 
 2. PE 헤더
 
+	- **DOS Header**
+
+		Microsoft는 PE File Format을 만들 때 당시에 널리 사용되던 DOS 파일에 대한 하위 호환성을 고려해서 만들었다. 그 결과로 PE 헤더의 제일 앞부분에는 기존 DOS EXE Header를 확장시킨 IMAGE_DOS_HEADER 구조체가 존재한다.
+
+		IMAGE_DOS_HEADER 구조체	
+
+		~~~
+		typedef struct_IMAGE_DOS_HEADER {
+			WORD	e_magic;		// DOS signature :4D5A ("MZ")
+			WORD	e_cblp;
+			WORD	e_cp;
+			WORD	e_crlc;
+			WORD	e_parhdr;
+			WORD	e_minalloc;
+			WORD	e_maxalloc;
+			WORD	e_ss;
+			WORD	e_sp;
+			WORD	e_csum;
+			WORD	e_ip;
+			WORD	e_cs;
+			WORD	e_lfarlc;
+			WORD	e_ovno;
+			WORD	e_res[4];
+			WORD	e_oemid;
+			WORD	e_res2[10];
+			WORD	e_lfanew;		// offset to NT header
+		} IMAGE_DOS_HEADER, *PIMAGE_DOS_HEADER;
+		~~~
+
+		IMAGE_DOS_HEADER 구조체의 크기는 40h(64byte)이다. 이 구조체에서 꼭 알아두어야 할 중요한 멤버는 **e_magic**과 **e_lfanew**이다.
+
+		> e_magic : DOS signature (4D5A => ASCII 값 "MZ")
+		> e_lfanew : NT header의 옵셋을 표시 (파일에 따라 가변적인 값을 가짐)
+
+		모든 PE 파일은 시작 부분(e_magic)에 DOS signature("MZ")가 존재하고, e_lfanew 값이 가리키는 위치에 NT Header 구조체가 존재해야 합니다(NT Header 구조체의 이름은 IMAGE_NT_HEADERS이며 나중에 소개됩니다).
+
+		> MZ는 Microsoft에서 DOS 실행 파일을 설계한 마크 주비코브스키라는 사람의 영문 이니셜이다! ~~전 세계에 자신의 이름을 새기신 갓 마크 센세...~~
+
+		![13-2](https://user-images.githubusercontent.com/26838115/44982233-25ea0a00-afb0-11e8-9a41-bc8cd9451b38.png)
+
+		IMAGE_DOS_HEADER 부분을 보면, PE 스펙에 맞게 파일 시작 2바이트는 4D5A이며, e_lfanew 값은 000000E8이라는 것을 알 수 있다. (리틀 엔디언 방식으로 저장했으므로, E8000000이 아닌 것을 숙지!) 시험 삼아 이 값들을 변경한 후 실행하면, 정상 실행이 되지 않는다.
+
+	- **DOS Stub**
+
+		DOS HEADER 밑에는 DOS stub이 존재한다. DOS Stub의 존재 여부는 옵션이며 크기도 일정하지 않다. (DOS Stub이 없어도 파일 실행에는 문제가 없음). DOS Stub은 코드와 데이터의 혼합으로 이루어져 있다. notepad.exe의 DOS Stub 코드이다.
+
+		![13-3](https://user-images.githubusercontent.com/26838115/44982279-529e2180-afb0-11e8-9e46-631ee9e786ba.png)
+
+		위 그림에서 파일 옵셋 40 ~ 4D 영역은 16비트 어셈블리 명령어이다. 32비트 Windows OS에서는 이쪽 명령어가 실행되지 않는다(PE 파일로 인식하기 떄문에 아예 이쪽 코드를 무시한다). notepad.exe 파일을 DOS 환경에서 실행하거나, DOS용 디버거(debug.exe)를 이용해서 실행하면 저 코드를 실행시킬 수 있다(DOS EXE 파일로 인식한다. 이들은 PE File Format을 모르므로...).
+
+	- **NT Header**
+
+		NT header 구조체 IMAGE_NT_DEADERS이다.
+
+		~~~
+		typedef struct _IMAGE_NT_HEADERS {
+			DWORD Signature;			// PE Signature : 50450000 ("PE"00)
+			IMAGE_FILE_HEADER FileHeader;
+			IMAGE_OPTIONAL_HEADER32 OptionalHeader;
+		} IMAGE_NT_HEADERS32, *PIMAGE_NT_HEADERS32;
+
+		~~~
+
+		IMAGE_NT_HEADERS 구조체는 3개의 멤버로 되어 있는데, 제일 첫 멤버는 **Signature**로 5045000h("PE"00)값을 가진다. 그리고 FileHeader와 Optional Header 구조체 멤버가 있다. notepad.exe의 IMAGE_NT_HEADERS의 내용을 hex editor로 살펴보자.
+
+		![13-4](https://user-images.githubusercontent.com/26838115/44982793-005e0000-afb2-11e8-9883-8787073aa8e1.png)
+
+		IMAGE_NT_HEADERS 구조체의 크기는 F8이다(D0 8번째 칸까지).
+
+	- **NT Header - File Header**
+
+		파일의 개략적인 속성을 나타내는 IMAGE_FILE_HEADER 구조체이다.
+
+		~~~
+		typedef struct _IMAGE_FILE_HEADER {
+			WORD	Machine;
+			WORD 	NumbeOfSections;
+			DWORD	TimeDateStamp;
+			DWORD	PointerToSymbolTable;
+			DWORD	NumberOfSymbols;
+			WORD	SizeOfOptionalHeader;
+			WORD	Characteristics;
+		} IMAGE_FILE_HEADER, *PIMAGE_FILE_HEADER;
+		~~~
+
+		IMAGE_FILE_HEADER 구조체에서 아래 4가지 멤버가 중요하다!
+
+		- **A. Machine**
+
+		Machine 넘버는 CPU별로 고유한 값이며 32비트 Intel x86 호환 칩은 14C의 값을 가진다. 아래는 winnt.h 파일에 정의된 Machine 넘버의 값들이다.
+
+		~~~
+		#define IMAGE_FILE_MACHINE_UNKNOWN           0
+		#define IMAGE_FILE_MACHINE_I386              0x014c  // Intel 386.
+		#define IMAGE_FILE_MACHINE_R3000             0x0162  // MIPS little-endian, 0x160 big-endian
+		#define IMAGE_FILE_MACHINE_R4000             0x0166  // MIPS little-endian
+		#define IMAGE_FILE_MACHINE_R10000            0x0168  // MIPS little-endian
+		#define IMAGE_FILE_MACHINE_WCEMIPSV2         0x0169  // MIPS little-endian WCE v2
+		#define IMAGE_FILE_MACHINE_ALPHA             0x0184  // Alpha_AXP
+		#define IMAGE_FILE_MACHINE_SH3               0x01a2  // SH3 little-endian
+		#define IMAGE_FILE_MACHINE_SH3DSP            0x01a3
+		#define IMAGE_FILE_MACHINE_SH3E              0x01a4  // SH3E little-endian
+		#define IMAGE_FILE_MACHINE_SH4               0x01a6  // SH4 little-endian
+		#define IMAGE_FILE_MACHINE_SH5               0x01a8  // SH5
+		#define IMAGE_FILE_MACHINE_ARM               0x01c0  // ARM Little-Endian
+		#define IMAGE_FILE_MACHINE_THUMB             0x01c2  // ARM Thumb/Thumb-2 Little-Endian
+		#define IMAGE_FILE_MACHINE_ARMNT             0x01c4  // ARM Thumb-2 Little-Endian
+		#define IMAGE_FILE_MACHINE_AM33              0x01d3
+		#define IMAGE_FILE_MACHINE_POWERPC           0x01F0  // IBM PowerPC Little-Endian
+		#define IMAGE_FILE_MACHINE_POWERPCFP         0x01f1
+		#define IMAGE_FILE_MACHINE_IA64              0x0200  // Intel 64
+		#define IMAGE_FILE_MACHINE_MIPS16            0x0266  // MIPS
+		#define IMAGE_FILE_MACHINE_ALPHA64           0x0284  // ALPHA64
+		#define IMAGE_FILE_MACHINE_MIPSFPU           0x0366  // MIPS
+		#define IMAGE_FILE_MACHINE_MIPSFPU16         0x0466  // MIPS
+		#define IMAGE_FILE_MACHINE_AXP64             IMAGE_FILE_MACHINE_ALPHA64
+		#define IMAGE_FILE_MACHINE_TRICORE           0x0520  // Infineon
+		#define IMAGE_FILE_MACHINE_CEF               0x0CEF
+		#define IMAGE_FILE_MACHINE_EBC               0x0EBC  // EFI Byte Code
+		#define IMAGE_FILE_MACHINE_AMD64             0x8664  // AMD64 (K8)
+		#define IMAGE_FILE_MACHINE_M32R              0x9041  // M32R little-endian
+		#define IMAGE_FILE_MACHINE_CEE               0xC0EE
+		~~~
+
+		- **B. NumberOfSections**
+
+		PE 파일은 코드, 데이터, 리소스 등이 각각의 섹션에 나뉘어서 저장된다. 이 때 NumberOfSections는 바로 그 섹션의 개수를 나타낸다. 그런데 이 값은 반드시 0보다 커야 한다. 또 정의된 섹션 개수와 실제 섹션이 다르면 실행 에러가 발생한다.
+
+		- **C. SizeOfOptionalHeader**
+
+		SizeOfOptionHeader 멤버는 바로 이 IMAGE_OPTIOANL_HEADER32 구조체의 크기를 나타낸다. IMAGE_OPTIOANL_HEADER32는 C언어의 구조체이기 떄문에 이미 그 크기가 결정되어 있다. 그런데 Windows의 PE 로더는 IMAGE_FILE_HEADER의 SizeOfOptionalHeader 값을 보고 IMAGE_OPTIOANL_HEADER32 구조체의 크기를 인식한다. <br/><br/>
+
+		PE32+ 형태의 파일인 경우에는 IMAGE_OPTIOANL_HEADER32 구조체 댓ㄴ IMAGE_OPTIOANL_HEADER64 구조체를 사용한다. 두 구조체의 크기는 다르기 때문에 SizeOfOptionalHeader 멤버에 구조체 크기를 명시하는 것이다.
+
+		> IMAGE_DOS_HEADER의 e_lfanew 멤버와 IMAGE_FILE_HEADER의 SizeOfOptioanlHeader의 멤버 때문에 일반적인(상식적인) PE 파일 형식을 벗어나는 일명 '꽈배기' PE 파일(PE Patch)을 만들 수 있다.
+
+		- **D. Characteristic**
+
+		파일의 속성을 나타내는 값으로, 실행이 가능한 형태인지(executable or not) 혹은 DLL 파일인지 등의 정보들이 bit OR 형식으로 조합된다.
+
+		~~~
+		#define IMAGE_FILE_RELOCS_STRIPPED           0x0001  // Relocation info stripped from file.
+		#define IMAGE_FILE_EXECUTABLE_IMAGE          0x0002  // File is executable  (i.e. no unresolved externel references).
+		#define IMAGE_FILE_LINE_NUMS_STRIPPED        0x0004  // Line nunbers stripped from file.
+		#define IMAGE_FILE_LOCAL_SYMS_STRIPPED       0x0008  // Local symbols stripped from file.
+		#define IMAGE_FILE_AGGRESIVE_WS_TRIM         0x0010  // Agressively trim working set
+		#define IMAGE_FILE_LARGE_ADDRESS_AWARE       0x0020  // App can handle >2gb addresses
+		#define IMAGE_FILE_BYTES_REVERSED_LO         0x0080  // Bytes of machine word are reversed.
+		#define IMAGE_FILE_32BIT_MACHINE             0x0100  // 32 bit word machine.
+		#define IMAGE_FILE_DEBUG_STRIPPED            0x0200  // Debugging info stripped from file in .DBG file
+		#define IMAGE_FILE_REMOVABLE_RUN_FROM_SWAP   0x0400  // If Image is on removable media, copy and run from the swap file.
+		#define IMAGE_FILE_NET_RUN_FROM_SWAP         0x0800  // If Image is on Net, copy and run from the swap file.
+		#define IMAGE_FILE_SYSTEM                    0x1000  // System File.
+		#define IMAGE_FILE_DLL                       0x2000  // File is a DLL.
+		#define IMAGE_FILE_UP_SYSTEM_ONLY            0x4000  // File should only be run on a UP machine
+		#define IMAGE_FILE_BYTES_REVERSED_HI         0x8000  // Bytes of machine word are reversed.
+		~~~
+
+		그 중, 0002h와 2000h의 값을 유심히 보자. PE 파일 중에 Characteristics 값에 0002h가 없는 경우(not executable)가 있을까? 답은..<br/><br/>
+
+		있다! 예를 들어 xxx.obj와 같은 object 파일 및 resource DLL 같은 파일을 들 수 있다. <br/><br/>
+
+		마지막으로 IMAGE_FILE_HEADER의 TimeDateStamp 멤버는 파일의 실행에 영향을 미치지 않는 값으로, 해당 파일의 빌드 시간을 나타낸 값이다. 개발 도구와 옵션에 따라 표기가 될 수도 있고 안 될 수도 있다. <br/><br/>
+
+	그럼 이제 Hex Editor 에서 notepad.exe의 IMAGE_FILE_HEADER 구조체를 확인해 보자.
+
+	![13-5](https://user-images.githubusercontent.com/26838115/44985296-d1985780-afba-11e8-9b9f-d050adec8d04.png)
+
+	위의 그림을 알아보기 쉽게 구조체 멤버로 표현해 보자.
+
+	~~~
+	[ IMAGE_FILE_HEADER ] - notepad.exe
+
+	offset		value		description
+	--------------------------------------------
+	000000EC		8664	machine
+	000000EE 		0006	number of sections
+	000000F0  	9D4727C2	time date stamp
+	000000F4	00000000	offset to symbol table
+	000000F8 	00000000	number of symbols
+	000000FC 		00F0 	size of optioanl header
+	000000FE 		0022 	characteristics
+							IMAGE_FILE_RELOCS_STRIPPED
+							IMAGE_FILE_EXECUTABLE_IMAGE
+							IMAGE_FILE_LINE_NUMS_STRIPPED
+							IMAGE_FILE_LOCAL_SYMS_STRIPPED
+							IMAGE_FILE_32BIT_MACHINE
+	~~~
 
 
+	- **NT Header - Optional Header**
+
+		PE 헤더 구조체 중에서 가장 크기가 큰 IMAGE_OPTIONAL_HEADER32이다.
+
+		~~~
+		typedef struct _IMAGE_DATA_DIRECTORY {
+		    DWORD   VirtualAddress;
+		    DWORD   Size;
+		} IMAGE_DATA_DIRECTORY, *PIMAGE_DATA_DIRECTORY;
+
+		#define IMAGE_NUMBEROF_DIRECTORY_ENTRIES    16
+
+		//
+		// Optional header format.
+		//
+
+		typedef struct _IMAGE_OPTIONAL_HEADER {
+		    //
+		    // Standard fields.
+		    //
+
+		    WORD    Magic;
+		    BYTE    MajorLinkerVersion;
+		    BYTE    MinorLinkerVersion;
+		    DWORD   SizeOfCode;
+		    DWORD   SizeOfInitializedData;
+		    DWORD   SizeOfUninitializedData;
+		    DWORD   AddressOfEntryPoint;
+		    DWORD   BaseOfCode;
+		    DWORD   BaseOfData;
+
+		    //
+		    // NT additional fields.
+		    //
+
+		    DWORD   ImageBase;
+		    DWORD   SectionAlignment;
+		    DWORD   FileAlignment;
+		    WORD    MajorOperatingSystemVersion;
+		    WORD    MinorOperatingSystemVersion;
+		    WORD    MajorImageVersion;
+		    WORD    MinorImageVersion;
+		    WORD    MajorSubsystemVersion;
+		    WORD    MinorSubsystemVersion;
+		    DWORD   Win32VersionValue;
+		    DWORD   SizeOfImage;
+		    DWORD   SizeOfHeaders;
+		    DWORD   CheckSum;
+		    WORD    Subsystem;
+		    WORD    DllCharacteristics;
+		    DWORD   SizeOfStackReserve;
+		    DWORD   SizeOfStackCommit;
+		    DWORD   SizeOfHeapReserve;
+		    DWORD   SizeOfHeapCommit;
+		    DWORD   LoaderFlags;
+		    DWORD   NumberOfRvaAndSizes;
+		    IMAGE_DATA_DIRECTORY DataDirectory[IMAGE_NUMBEROF_DIRECTORY_ENTRIES];
+		} IMAGE_OPTIONAL_HEADER32, *PIMAGE_OPTIONAL_HEADER32;
+
+		~~~
+
+		아래에 후술될 값들은 파일 실행에 필수적이라서 잘못 세팅되면 파일이 정상 실행 되지 않는다!
+
+
+		- **1. Magic**
+
+			Magic 넘버는 IMAGE_OPTIONAL_HEADER32 구조체인 경우 10B, IMAGE_OPTIONAL_HEADER64 구조체인 경우 20B의 값을 가진다.
+
+		- **2. AddressOfEntryPoint**
+
+			AddressOfEntryPoint는 EP(Entry Point)의 RVA(Relative Virtual Address) 값을 가지고 있다. 이 값이야말로 프로그램에서 최초로 실행되는 코드의 시작 주소로, 매우 중요한 값이다.
+
+		- **3. ImageBase**
+
+			프로세스의 가상 메모리는 0 ~ FFFFFFFF 범위이다(32비트의 경우). ImageBase는 이렇게 광활한 메모리에서 PE 파일이 로딩되는 시작 주소를 나타낸다. <br/>
+			EXE, DLL 파일은 user memory 영역인 0~7FFFFFFF 범위에 로딩되고, SYS 파일은 kernel memory 영역인 80000000 ~ FFFFFFFF 범위에 로딩된다. 일반적으로 개발 도구들이 만들어내는 EXE 파일의 ImageBase 값은 00400000이고, DLL 파일의 ImageBase 값은 1000000이다(물론 다른 값도 지정 가능). PE 로더는 PE 파일을 실행시키기 위해 프로세스를 생성하고 파일을 메모리에 로딩한 후 EIP 레지스터 값을 ImageBase + AddressOfEntryPoint 값으로 세팅합니다.
+
+		- **4. SectionAlignment, FileAlignment**
+
+			PE 파일의 Body 부분은 섹션(Section)으로 나뉘어져 있다. 파일에서 섹션의 최소단위를 나타내는 것이 FileAlignment이고 메모리에서 섹션의 최소단위를 나타내는 것이 SectionAlignment이다(하나의 파일에서 FileAlignment와 SectionAlignment의 값은 같을 수도 있고 다를 수도 있음). 파일/메모리의 섹션 크기는 반드시 각각 FileAlignment/SectionAlignment의 배수가 되어야 한다.
+
+		- **5. SizeOfImage**
+
+			SizeOfImage는 PE 파일이 메모리에 로딩되었을 때 가상 메모리에서 PE Image가 차지하는 크기를 나타낸다. 일반적으로 파일의 크기와 메모리에 로딩된 크기는 다르다.
+
+		- **6. SizeOfHeader**
+
+			SizeOfHeader는 PE 헤더의 전체 크기를 나타냅니다. 이 값 역시 FileAlignment의 배수여야 한다. 파일 시작에서 SizeOfHeader 옵셋만큼 떨어진 위치에 첫 번째 섹션이 위치함.
+
+		- **7. Subsystem**
+
+			이 Subsystem 값을 보고 시스템 드라이버 파일(*.sys)인지, 일반 실행 파일(*.exe, *.dll)인지 구분할 수 있다. Subsystem 멤버는 아래 값을 가질 수 있다.
+
+			값 | 의미 | 비고
+			|:----|:----|:----|
+			1 | Driver file | 시스템 드라이버(예: ntfs.sys)
+			2 | GUI(Graphic User Interface) 파일 | 창 기반 애플리케이션(예: notepad.exe)
+			3 | CUI(Console User Interface) 파일 | 콘솔 기반 애플리케이션(예: cmd.exe)
+
+		- **8. NumberOfRvaAndSizes**
+
+			NumberOfRvaAndSizes는 IMAGE_OPTIONAL_HEADER32 구조체의 마지막 멤버인 DataDirectory 배열의 개수를 나타낸다. 구조체 정의에 분명히 배열 개수가 IMAGE_NUMBEROF_DIRECTORY_ENTRIES (16)이라고 명시되어 있지만, PE 로더는 NumberOfRvaAndSizes의 값을 보고 배열의 크기를 인식한다. 즉 16이 아닐 수도 있다는 뜻이다.
+
+		- **9. DataDirectory**
+
+			DataDirectory는 IMAGE_DATA_DIRECTORY 구조체의 배열로, 배열의 각 항목마다 정의된 값을 가진다(정의에는 16개로 정의됨). 
+
+			~~~
+			DataDirectory[0] = EXPORT Directory
+			DataDirectory[1] = IMPORT Directory
+			DataDirectory[2] = RESOURCE Directory
+			DataDirectory[3] = EXCEPTION Directory
+			DataDirectory[4] = SECURITY Directory
+			DataDirectory[5] = BASERELOC Directory
+			DataDirectory[6] = DEBUG Directory
+			DataDirectory[7] = COPYRIGHT Directory
+			DataDirectory[8] = GLOBALPTR Directory
+			DataDirectory[9] = TLS Directory
+			... 등등
+			~~~
+
+			여기서 말하는 Directory란 그냥 어떤 구조체의 배열이라고 생각하면 된다. 여기서 EXPORT, IMPORT, RESOURCE, TLS Directory는 중요하다. 나중에 다시 다룸.
+
+
+
+
+
+
+> 위에 올려놓은 구조체들의 코드는 [winnt.h 파일](https://www.codemachine.com/downloads/win80/winnt.h)에서 직접 찾아볼 수 있다!
 
 <br/>
 
