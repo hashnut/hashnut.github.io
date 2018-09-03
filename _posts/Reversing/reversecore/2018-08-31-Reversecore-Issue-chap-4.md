@@ -111,7 +111,7 @@ comment : true
 
 	![4-2](https://user-images.githubusercontent.com/26838115/44966492-7775a300-af76-11e8-9ab6-c0508eaef6d7.png)
 
-	위 그림을 보면, 각 세그먼트 레지스터가 가리키는 세그먼트 디스크립터(Segment Descriptor)와 가상 메모리가 조합되어 선형주소(Linear Adderss)가 되며, 페이징 기법에 의해서 선형 주소가 최종적으로 물리주소(Physical Address)로 변환됩니다. 만약 OS에서 페이징을 사용하지 않는다면 선형주소는 그대로 물리주소가 됩니다.<br/><br/>
+	위 그림을 보면, 각 세그먼트 레지스터가 가리키는 세그먼트 디스크립터(Segment Descriptor)와 가상 메모리가 조합되어 선형주소(Linear Adderss)가 되며, 페이징 기법에 의해서 선형 주소가 최종적으로 물리주소(Physical Address)로 변환됩니다. 만약 OS에서 페이징을 사용하지 않는다면 선형주소는 그대로 물리주소가 된다.<br/><br/>
 
 	각 세그먼트 레지스터의 이름은 아래와 같다.
 
@@ -140,10 +140,10 @@ comment : true
 		연산 명령 후에 결과 값이 0이 되면 ZF가 1(True)로 세팅된다.
 
 	- Overflow Flag(OF)
-		부호 있는 수(signed integer)의 오버플로가 발생했을 때 1 로 세팅된다. 그리고 MSB(Most Significant Bit)가 변경되었을 때 1로 세팅됩니다.
+		부호 있는 수(signed integer)의 오버플로가 발생했을 때 1 로 세팅된다. 그리고 MSB(Most Significant Bit)가 변경되었을 때 1로 세팅된다.
 
 	- Carry Flag(CF)
-		부호 없는 수(unsigned integer)의 오버플로가 발생했을 때 1로 세팅됩니다.
+		부호 없는 수(unsigned integer)의 오버플로가 발생했을 때 1로 세팅된다.
 
 6. Instruction Pointer
 
