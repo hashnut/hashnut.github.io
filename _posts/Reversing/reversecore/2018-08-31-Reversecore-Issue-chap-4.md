@@ -30,7 +30,7 @@ comment : true
 	|Debug registers|
 	|...|
 
-2. 먼저 Basic program Execution registers에 대해 알아보자.
+2. 먼저 **Basic program Execution registers**에 대해 알아보자.
 
 	Basic program execution registers | 구성 요소
 	|:-----|:------|
@@ -104,7 +104,7 @@ comment : true
 
 	EBP는 함수가 호출되었을 때 그 순간의 ESP를 저장하고 있다가, 함수가 리턴하기 직전에 다시 ESP에 값을 되돌려줘서 스택이 깨지지 않도록 한다(스택 프레임 기법). ESI와 EDI는 특정 명령어들(LODS< STOS, REP MOVS 등)과 함께 주로 메모리 복사에 사용된다.
 
-4. 세그먼트 레지스터
+4. **세그먼트 레지스터**
 
 	세그먼트(Segment)란 IA-32의 메모리 관리 모델에서 나오는 용어이다. IA-32 보호 모드에서 세그먼트란 메모리를 조각내어 각 조각마다 시작 주소, 범위, 접근 권한 등을 부여해서 메모리를 보호하는 기법을 말한다. 또한 세그먼트는 페이징(Paging) 기법과 함께 가상 메모리를 실제 물리 메모리로 변경할 때 사용된다. 세그먼트 메모리는 Segment Descriptor Table(SDT)이라고 하는 곳에 기술되어 있는데, 세그먼트 레지스터는 바로 이 SDT의 index를 가지고 있다.
 
@@ -144,7 +144,7 @@ comment : true
 	- Carry Flag(CF)
 		부호 없는 수(unsigned integer)의 오버플로가 발생했을 때 1로 세팅된다.
 
-6. Instruction Pointer
+6. **Instruction Pointer**
 
 	- EIP : Instruction pointer
 
