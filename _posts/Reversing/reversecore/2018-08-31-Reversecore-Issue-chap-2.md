@@ -31,13 +31,13 @@ comment : true
 
 	- **문자열 검색 방법**
 
-		***마우스 우측 메뉴 - Search for - All referenced text strings*** <br/>
-		해당 방법을 이용하여, 원하는 문자열이 어디에서 **CALL, JMP**되는지 등등을 파악할 수 있다.<br/>
-		VC++에서는 static 문자열을 기본적으로 유니코드(UNICODE)형식으로 저장합니다. static 문자열이란 프로그램 내부에 하드코딩(Hard Coding)되어 있는 문자열을 의미합니다.<br/>
+		***마우스 우측 메뉴 - Search for - All referenced text strings*** <br/><br/>
+		해당 방법을 이용하여, 원하는 문자열이 어디에서 **CALL, JMP**되는지 등등을 파악할 수 있다.
+		VC++에서는 static 문자열을 기본적으로 유니코드(UNICODE)형식으로 저장한다. static 문자열이란 프로그램 내부에 하드코딩(Hard Coding)되어 있는 문자열을 의미한다.
 
 	- **API 검색 방법 (1) - 호출 코드에 BP**
 
-		***마우스 우측 메뉴 - Search for - All intermodular calls*** <br/>
+		***마우스 우측 메뉴 - Search for - All intermodular calls*** <br/><br/>
 		코드에서 사용된 API 호출 목록을 보고 프로그램에서 코드를 뽑아낸다!
 
 	- **API 검색 방법 (2) - API 코드에 직접 BP**

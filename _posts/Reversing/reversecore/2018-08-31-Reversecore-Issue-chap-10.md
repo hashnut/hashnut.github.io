@@ -49,7 +49,7 @@ comment : true
 
 	![10-1](https://user-images.githubusercontent.com/26838115/44953107-4dff3d80-aeca-11e8-9aec-cebad8f1db3f.png)
 
-	0040101C 주소를 보면, **ESP**에 8을 더하여 Caller인 main()함수가 자신이 스택에 입력한 함수 파라미터를 직접 정리	 하고 있다. 
+	0040101C 주소를 보면, **ESP**에 8을 더하여 Caller인 main()함수가 자신이 스택에 입력한 함수 파라미터를 직접 정리하고 있다. 
 	이 방식이 바로 cdecl 방식으로, 장점은 C 언어의 printf() 함수와 같이 가변 길이 파라미터를 전달할 수 있다는 것이다. 
 
 5. **stdcall**
