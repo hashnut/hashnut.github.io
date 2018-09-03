@@ -51,7 +51,11 @@ comment : true
 	Program Status and Control Register (32비트 - 1개) | EFLAGS
 	Instruction Pointer (32 비트 - 1개) | EIP
 
-	- 참고 : 레지스터 이름에 E(Extended)가 붙은 경우는 예전 16비트 CPU인 IA-16시절부터 존재하던 16비트 크기위 레지스터들을 32비트 크기로 확장시켰다는 뜻임.
+	<br/>
+
+	- 참고 : 레지스터 이름에 E(Extended)가 붙은 경우는 예전 16비트 CPU인 IA-16시절부터 존재하던 16비트 크기의 레지스터들을 32비트 크기로 확장시켰다는 뜻임.
+
+	<br/>
 
 3. **범용 레지스터 (General Purpose Registers)**
 
@@ -68,6 +72,7 @@ comment : true
 	- AH : (8 ~ 15) AX의 상위 8비트
 	- AL : (0 ~ 8) AX의 하위 8비트
 
+	<br/>
 	즉 4바이트(32비트)를 다 사용하고 싶을 때는 EAX를 사용하고, 2바이트(16비트)만 사용할 때는 EAX의 하위 16비트 부분인 AX를 사용하면 된다. 이런 식으로 하나의 32비트 레지스터를 상황에 맞게 8비트, 16비트, 32비트로 알뜰하게 사용할 수 있다! <br/><br/>
 
 	각 레지스터의 이름은 아래와 같다. 
@@ -77,12 +82,14 @@ comment : true
 	- ECX : Counter for string and loop operations
 	- EDX : I/O pointer
 
+	<br/>
 	위의 4개의 레지스터들은 주로 산술연산(ADD, SUB, XOR, OR 등) 명령어에서 상수/변수 값의 저장 용도로 많이 사용된다. 어떤 어셈블리 명령어(MUL, DIV, LODS 등)들은 특정 레지스터를 직접 조작하기도 한다(이런 명령어가 실행된 이후에 특정 레지스터들의 값이 변경됨).<br/><br/>
 
 	그리고 추가적으로 ECX와 EAX는 특수한 용도로도 사용된다. ECX는 반복문 명령어(LOOP)에서 반복 카운트(loop count)로 사용된다(루프를 돌 때마다 ECX를 1씩 감소시킨다). EAX는 일반적으로 함수 리턴 값에 사용된다. 모든 Win32 API 함수들은 리턴 값을 EAX에 저장한 후 리턴한다. <br/><br/>
 
 	- Windows 어셈블리 프로그래밍에서 주의할 점!
 		Win32 API 함수들은 내부에서 ECX와 EDX를 사용한다. 따라서 이런 API가 호출되면 ECX와 EDX의 값이 변경된다. 따라서 ECX와 EDX에 중요한 값이 저장되어 있다면 API 호출 전에 다른 레지스터나 스택에 백업해야 한다!
+	<br/>
 
 	나머지 범용 레지스터들의 이름은 아래와 같다.
 
@@ -90,6 +97,8 @@ comment : true
 	- ESI : source pointer for string operations
 	- EDI : destination pointer for string operations
 	- ESP : Stack pointer (in the SS segment)
+
+	<br/>
 
 	위 4개의 레지스터들은 주로 메모리 주소를 저장하는 포인터로 사용된다. <br/>
 	ESP는 스택 메모리 주소를 가리킨다. 어떤 명령어들(PUSH, POP, CALL, RET)은 ESP를 직접 조작하기도 한다(스택 메모리 관리는 프로그램에서 매우 중요하므로, ESP를 다른 용도로 사용하지 말아야 한다). <br/><br/>
