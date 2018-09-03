@@ -22,7 +22,7 @@ comment : true
 
 3. VB 엔진의 사용 예를 보자. 메시지 박스를 출력하고 싶을 때, VB 소스코드에서 MsgBox() 함수를 사용한다. VB 컴파일러는 실제로 MSVBVM60.dll!rtc MsgBox() 함수가 호출되도록 만들고, 이 함수 내부에서 Win32 API인 user32.dll!MessageBox() 함수를 호출해주는 방식으로 동작한다. (VB 소스코드에서 user32.dll!MessageBoxW() 함수를 직접 호출하는 것도 가능하다)
 
-4. **N(Native) code, P(Pseudo) code** : 
+4. **N(Native) code, P(Pseudo) code** : <br/>
   VB 파일은 옵션에 따라 N code와 P code로 컴파일이 가능하다. N code는 일반적인 디버거에서 해석 가능한 IA-32 Instruction을 사용하는 반면, P code는 인터프리터 언어 개념으로서 VB 엔진으로 가상 머신을 구현하여 자체적으로 해석 가능한 명령어(바이트 코드)를 사용하는 것이다. P code는 간단히 말해서 Java 처럼 Java EVM 을 사용한다고 보면 이해하기 편할 것 같다.
 
 5. **EP**(EntryPoint) 주변의 코드를 한 번 보자.
@@ -79,7 +79,7 @@ comment : true
   즉 EBP가 100이라면, 108의 주소에 있는 특정 값(예를 들어 20)을 EAX에 넣게 된다.<br/><br/>
   결론적으로, **LEA**만이 실행중에 계산된 주소를 얻을 수 있다고 알아두면 된다!<br/><br/>
 
-  *(**LEA**에 대한 설명은 **[enes's blog](http://enes.tistory.com/entry/MOVE와-LEA-명령의-차이점)**에서 가져옴.)*
+  > *(**LEA**에 대한 설명은 **[enes's blog](http://enes.tistory.com/entry/MOVE와-LEA-명령의-차이점)**에서 가져옴.)*
 
   
 

@@ -35,7 +35,7 @@ comment : true
 
 > notepad.exe 파일을 헥스 에디터 HxD로 로드
 
-
+DOS header부터 Section header까지를 PE헤더, 그 밑의 Section들을 합쳐서 PE 바디(Body)라고 합니다. 파일에서는 offset으로, 메모리에서는 VA(Virtual Address, 절대주소)로 위치를 표현합니다. 파일이 메모리에 로딩되면 모양이 달라집니다(Section의 크기, 위치 등). 파일의 내용은 보통 코드(.text), 데이터(.data), 리소스(.rsrc) 섹션에 나뉘어서 저장됩니다.
 
 
 

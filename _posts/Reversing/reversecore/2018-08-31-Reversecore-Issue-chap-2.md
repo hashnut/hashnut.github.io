@@ -47,11 +47,11 @@ comment : true
 		이런 경우에는 프로세스 메모리에서 로딩된 라이브러리(DLL 코드)에 직접 BP를 걸어 볼 수 있다. API라는 것은 OS에서 제공한 함수이고, 실제로 API는 **C:\Windows\system32** 폴더에 **XXX.dll** 파일 내부에 구현되어 있다. (예: kernel32.dll, user32.dll 등) 간단히 말해서 우리가 만든 프로그램이 어떤 의미 있는 일(각종 I/O)를 하려면 반드시 OS에서 제공된 API를 사용해서 OS에게 요청해야 하고, 그 API가 실제 구현된 시스템 DLL 파일들은 우리 프로그램의 프로세스 메모리에 로딩되어야 한다. <br/>
 		OllyDbg에서는 **View - Memory** (단축기 [Alt+M])메뉴에서 확인 가능하다.
 
-		- Packer(Run Time Packer)
+	> Packer(Run Time Packer)
 
 		실행 압축 유틸리티. 실행 파일의 코드, 데이터, 리소스 등을 압축시킨다. 일반 압축 파일과 다른 점은 실행 압축된 파일 그 자체도 실행 파일이라는 것이다.
 
-		- Protector
+	> Protector
 
 		실행 압축 기능 외에 파일과 그 프로세스를 보호하려는 목적으로 anti-debugging, anti-emulating, anti-dump 등의 기능을 추가한 유틸리티이다. Protector를 상세 분석하려면 높은 수준의 리버싱 지식이 요구된다.
 
