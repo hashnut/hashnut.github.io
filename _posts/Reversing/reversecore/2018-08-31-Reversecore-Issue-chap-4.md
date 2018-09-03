@@ -57,7 +57,7 @@ comment : true
 
 	<br/>
 
-3. **범용 레지스터 (General Purpose Registers)**
+2-1. **범용 레지스터 (General Purpose Registers)**
 
 	범용 레지스터 (General Purpose Registers)는 이름처럼 범용적으로 사용되는 레지스터들이다. IA-32에서 각각의 범용 레지스터들의 크기는 32비트(4바이트)이다. 보통은 상수/주소 등을 저장할 때 주로 사용되며, 특정 어셈블리 명령어에서는 특정 레지스터를 조작 하기도 한다. 또 어떤 레지스터들은 특수한 용도로 사용되기도 한다.
 
@@ -91,7 +91,7 @@ comment : true
 		Win32 API 함수들은 내부에서 ECX와 EDX를 사용한다. 따라서 이런 API가 호출되면 ECX와 EDX의 값이 변경된다. 따라서 ECX와 EDX에 중요한 값이 저장되어 있다면 API 호출 전에 다른 레지스터나 스택에 백업해야 한다!
 	<br/>
 
-	나머지 범용 레지스터들의 이름은 아래와 같다.
+	<br/>나머지 범용 레지스터들의 이름은 아래와 같다.
 
 	- EBP : Pointer to data on the stack (in the SS segment)
 	- ESI : source pointer for string operations
@@ -105,10 +105,26 @@ comment : true
 
 	EBP는 함수가 호출되었을 때 그 순간의 ESP를 저장하고 있다가, 함수가 리턴하기 직전에 다시 ESP에 값을 되돌려줘서 스택이 깨지지 않도록 한다(스택 프레임 기법). ESI와 EDI는 특정 명령어들(LODS< STOS, REP MOVS 등)과 함께 주로 메모리 복사에 사용된다.
 
-4. 
+2-2. 세그먼트 레지스터
 
+	세그먼트(Segment)란 IA-32의 메모리 관리 모델에서 나오는 용어이다. IA-32 보호 모드에서 세그먼트란 메모리를 조각내어 각 조각마다 시작 주소, 범위, 접근 권한 등을 부여해서 메모리를 보호하는 기법을 말한다. 또한 세그먼트는 페이징(Paging) 기법과 함께 가상 메모리를 실제 물리 메모리로 변경할 때 사용된다. 세그먼트 메모리는 Segment Descriptor Table(SDT)이라고 하는 곳에 기술되어 있는데, 세그먼트 레지스터는 바로 이 SDT의 index를 가지고 있다.
 
+	![4-2](https://user-images.githubusercontent.com/26838115/44966492-7775a300-af76-11e8-9ab6-c0508eaef6d7.png)
 
+	위 그림을 보면, 각 세그먼트 레지스터가 가리키는 세그먼트 디스크립터(Segment Descriptor)와 가상 메모리가 조합되어 선형주소(Linear Adderss)가 되며, 페이징 기법에 의해서 선형 주소가 최종적으로 물리주소(Physical Address)로 변환됩니다. 만약 OS에서 페이징을 사용하지 않는다면 선형주소는 그대로 물리주소가 됩니다.<br/><br/>
+
+	각 세그먼트 레지스터의 이름은 아래와 같다.
+
+	S / R | Name
+	|:----|:----|
+	CS | Code Segment
+	SS | Stack Segment
+	DS | Data Segment
+	ES | Extra(Data) Segment
+	FS | Data Segment
+	GS | Data Segment
+
+2-3. 프로그램 상태와 컨트롤 레지스터 
 
 
 <br/>
