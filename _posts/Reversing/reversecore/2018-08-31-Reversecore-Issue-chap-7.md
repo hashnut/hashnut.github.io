@@ -1,7 +1,7 @@
 ---
 
 layout : single
-title : "Reversecore Issue chap 7"
+title : "Reversecore Issue chap 7 - 스택 프레임"
 categories : [Reversing]
 tags : [reversecore, unsolved]
 comment : true
