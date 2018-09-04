@@ -85,7 +85,7 @@ comment : true
 		> e_magic : DOS signature (4D5A => ASCII 값 "MZ")
 		> e_lfanew : NT header의 옵셋을 표시 (파일에 따라 가변적인 값을 가짐)
 
-		모든 PE 파일은 시작 부분(e_magic)에 DOS signature("MZ")가 존재하고, e_lfanew 값이 가리키는 위치에 NT Header 구조체가 존재해야 합니다(NT Header 구조체의 이름은 IMAGE_NT_HEADERS이며 나중에 소개됩니다).
+		모든 PE 파일은 시작 부분(e_magic)에 DOS signature("MZ")가 존재하고, e_lfanew 값이 가리키는 위치에 NT Header 구조체가 존재해야 한다(NT Header 구조체의 이름은 IMAGE_NT_HEADERS이며 나중에 소개된다).
 
 		> MZ는 Microsoft에서 DOS 실행 파일을 설계한 마크 주비코브스키라는 사람의 영문 이니셜이다! ~~전 세계에 자신의 이름을 새기신 갓 마크 센세...~~
 
@@ -217,7 +217,7 @@ comment : true
 
 	그럼 이제 Hex Editor 에서 notepad.exe의 IMAGE_FILE_HEADER 구조체를 확인해 보자.
 
-	![13-5](https://user-images.githubusercontent.com/26838115/44985296-d1985780-afba-11e8-9b9f-d050adec8d04.png)
+	![13-5](https://user-images.githubusercontent.com/26838115/44987060-d19b5600-afc0-11e8-901b-ae4ce4a02358.png)
 
 	위의 그림을 알아보기 쉽게 구조체 멤버로 표현해 보자.
 
@@ -364,9 +364,80 @@ comment : true
 
 			여기서 말하는 Directory란 그냥 어떤 구조체의 배열이라고 생각하면 된다. 여기서 EXPORT, IMPORT, RESOURCE, TLS Directory는 중요하다. 나중에 다시 다룸.
 
+	- **IMAGE_OPTIONAL_HEADER 구조체 확인하기!**
 
+		![13-6](https://user-images.githubusercontent.com/26838115/45003738-700ad400-b020-11e8-95d8-4b76ba21d868.png)
 
+		00000100 주소에서 magic 값이 020B의 값을 가지는 것을 확인해 볼 수 있다!
 
+	- **섹션 헤더**
+
+		각 섹션의 속성(property)를 정의한 것이 섹션 헤더이다. PE 파일을 여러 개의 섹션 구조로 만들었을 때의 장점은 바로 프로그램의 안정성이다. 이를 위해서는 code/data/resouce마다 각각의 특성, 접근 권한 등을 다르게 설정할 필요가 있다.
+
+		종류 | 엑세스 권한
+		|:-----|:-----|
+		code | 실행, 읽기 권한
+		data | 비실행, 읽기, 쓰기 권한
+		resource | 비실행, 읽기 권한
+
+	- **IMAGE_SECTION_HEADER**
+
+		섹션 헤더는 각 섹션별 IMAGE_SECTION_HEADER 구조체의 배열로 되어 있다.
+
+		~~~
+		#define IMAGE_SIZEOF_SHORT_NAME              8
+
+		typedef struct _IMAGE_SECTION_HEADER {
+		    BYTE    Name[IMAGE_SIZEOF_SHORT_NAME];
+		    union {
+		            DWORD   PhysicalAddress;
+		            DWORD   VirtualSize;
+		    } Misc;
+		    DWORD   VirtualAddress;
+		    DWORD   SizeOfRawData;
+		    DWORD   PointerToRawData;
+		    DWORD   PointerToRelocations;
+		    DWORD   PointerToLinenumbers;
+		    WORD    NumberOfRelocations;
+		    WORD    NumberOfLinenumbers;
+		    DWORD   Characteristics;
+		} IMAGE_SECTION_HEADER, *PIMAGE_SECTION_HEADER;
+		~~~
+
+		IMAGE_SECTION_HEADER 구조체에서 알아야 할 중요 멤버는 다음과 같다(나머지는 사용되지 않음).
+
+		항목 | 의미
+		VirtualSize | 메모리에서 섹션이 차지하는 크기
+		VirtualAddress | 메모리에서 섹션의 시작 주소(RVA)
+		SizeOfRawData | 파일에서 섹션이 차지하는 크기
+		PointerToRawData | 파일에서 섹션의 시작 위치
+		Characteristic | 섹션의 속성(bit OR)
+
+		VirtualAddress와 PointerToRawData는 아무 값이나 가질 수 없고, 각각 (IMAGE_OPTIOANL_HEADER32에 정의된) SectionAlignment와 FileAlignment에 맞게 결정된다.
+
+	<br/><br/>
+
+		VirtualSize와 SizeOfRawData는 일반적으로 서로 다른 값을 가진다. 이는 파일에서의 섹션 크기와 메모리에 로딩된 섹션의 크기는 다르다는 것을 의미한다!
+
+	<br/><br/>
+
+		Characteristics는 다음과 같은 코드에 표시된 값들의 조합(bit OR)으로 이루어진다.
+
+		~~~
+		#define IMAGE_SCN_CNT_CODE                   0x00000020  // Section contains code.
+		
+		#define IMAGE_SCN_CNT_INITIALIZED_DATA       0x00000040  // Section contains initialized data.
+		
+		#define IMAGE_SCN_CNT_UNINITIALIZED_DATA     0x00000080  // Section contains uninitialized data.
+
+		#define IMAGE_SCN_MEM_EXECUTE                0x20000000  // Section is executable.
+
+		#define IMAGE_SCN_MEM_READ                   0x40000000  // Section is readable.
+
+		#define IMAGE_SCN_MEM_WRITE                  0x80000000  // Section is writeable.
+		~~~
+
+		마지막으로 Name 항목에 대해 얘기해 보자. Name 멤버는 C 언어의 문자열처럼 NULL로 끝나지 않는다. 또한 ASCII 값만 와야한다는 제한도 없다. PE 스펙에는 섹션 Name에 대한 어떠한 명시적인 규칙이 없기 때문에 어떠한 값을 넣어도 되고 NULL로 채워도 된다. 따라서 섹션의 Name은 그냥 참고용일 뿐 어떤 정보로써 활용하기에는 100% 장담할 수 없다. (데이터 섹션 이름을 '.code'로 해도 됨!)
 
 
 > 위에 올려놓은 구조체들의 코드는 [winnt.h 파일](https://www.codemachine.com/downloads/win80/winnt.h)에서 직접 찾아볼 수 있다!
