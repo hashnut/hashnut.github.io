@@ -422,11 +422,11 @@ Characteristic | 섹션의 속성(bit OR)
 
 VirtualAddress와 PointerToRawData는 아무 값이나 가질 수 없고, 각각 (IMAGE_OPTIOANL_HEADER32에 정의된) SectionAlignment와 FileAlignment에 맞게 결정된다.
 
-<br/><br/>
+<br/>
 
 VirtualSize와 SizeOfRawData는 일반적으로 서로 다른 값을 가진다. 이는 파일에서의 섹션 크기와 메모리에 로딩된 섹션의 크기는 다르다는 것을 의미한다!
 
-<br/><br/>
+<br/>
 
 Characteristics는 다음과 같은 코드에 표시된 값들의 조합(bit OR)으로 이루어진다.
 
