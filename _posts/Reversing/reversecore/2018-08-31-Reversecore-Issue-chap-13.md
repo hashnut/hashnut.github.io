@@ -573,6 +573,33 @@ FirstThunk | IAT(Import Address Table)의 주소(RVA)
 
 ![13-9](https://user-images.githubusercontent.com/26838115/45029665-64e98f80-b084-11e8-9480-91ad4e36c9b3.png)
 
+그럼 이제 PE 로더가 임포트 함수 주소를 IAT에 입력하는 기본적인 순서를 알아보자.
+
+~~~
+IAT 입력 순서
+
+1. IID(_IMAGE_IMPORT_DESCRIPTOR)의 Name 멤버를 읽어서 라이브러리의 이름 문자열("kernel32.dll")을 얻는다.
+2. 해당 라이브러리를 로딩한다.
+	-> LoadLibrary("kernel32.dll")
+3. IDD의 OriginalFirstThunk멤버를 읽어서 INT 주소를 얻는다.
+4. INT에서 배열의 값을 하나씩 읽어 해당 IMAGE_IMPORT_BY_NAME 주소(RVA)를 얻는다.
+5. IMAGE_IMPORT_BY_NAME의 Hint(ordinal) 또는 Name 항목을 이용하여 해당 함수의 시작 주소를 얻는다.
+	-> GetProcAddress("GetCurrentThreadId")
+	(ordianl은 라이브러리에서 함수의 고유번호를 의미한다.)
+6. IDD의 FirstThnk(IAT) 멤버를 읽어서 IAT 주소를 얻는다.
+7. 해당 IAT 배열 값에 위에서 구한 함수 주소를 입력한다.
+8. INT가 끝날 때까지 (NULL을 만날 때까지) 위 4 ~ 7 과정을 반복한다.
+
+~~~
+
+위 그림에서는 INT와 IAT의 각 원소가 동시에 같은 주소를 가리키고 있지만, 그렇지 않은 경우도 많다(변칙적인 PE 파일에 대해서는 하나씩 직접 해보자).
+
+- notepad.exe를 이용한 실습
+
+IMAGE_IMPORT_DESCRIPTOR 구조체 배열은 PE 헤더가 아닌 PE 바디에 위치한다. 그곳을 찾아가기 위한 정보는 역시 PE 헤더에 있는데, IMAGE_OPTIONAL_HEADER32.DataDirectory[1].VirtualAddress 값이 실제 IMAGE_IMPORT_DESCRIPTOR 구조체 배열의 시작 주소이다(RVA 값). IMAGE_IMPORT_DESCRIPTOR 구조체 배열을 다른 용어로는 IMPORT Directory Table이라고 한다. <br/>
+
+실습의 자세한 내용은 http://reversecore.com/23 에서 확인해 보도록 하자. PE 헤더 파트에 대한 자세한 내용이 해당 블로그에 담겨있다! (파일이 달라서 Hex Editor로 요소들을 정확히 읽어내기가 힘듦..) <br/>
+
 
 
 
@@ -592,5 +619,21 @@ FirstThunk | IAT(Import Address Table)의 주소(RVA)
 
 ### Issue #1
 
-해결해야 할 이슈 : 
+- 해결해야 할 이슈 : 
+
+IMAGE_IMPORT_DESCRIPTOR에서 나온 구조체 멤버 중, 라이브러리의 주소(RVA 형식)를 가리키는 구조체 배열 INT와 IAT의 차이는 무엇일까?
+
+<br/><br/>
+
+- 답 :
+
+FirstThunk와 OriginalFirstThunk의 차이? IAT와 INT는 동일하게 IMAGE_THUNK_DATA32 구조체 배열로 구성되어 있다. 하지만 바인딩 과정이라는걸 거치면서 INT에 값이 들어가면서 IAT가 된다. 즉, OriginalFirstThunk == INT, FirstThunk == IAT <br/>
+
+---
+
+### Issue #2
+
+- 해결해야 할 이슈 : 
+
+IAT 입력 순서에서 ***5.***번 부분이 어떻게 이루어지는지 잘 모르겠음.
 
