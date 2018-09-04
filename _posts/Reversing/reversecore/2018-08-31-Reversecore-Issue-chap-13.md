@@ -444,10 +444,145 @@ Characteristics는 다음과 같은 코드에 표시된 값들의 조합(bit OR)
 #define IMAGE_SCN_MEM_WRITE                  0x80000000  // Section is writeable.
 ~~~
 
-마지막으로 Name 항목에 대해 얘기해 보자. Name 멤버는 C 언어의 문자열처럼 NULL로 끝나지 않는다. 또한 ASCII 값만 와야한다는 제한도 없다. PE 스펙에는 섹션 Name에 대한 어떠한 명시적인 규칙이 없기 때문에 어떠한 값을 넣어도 되고 NULL로 채워도 된다. 따라서 섹션의 Name은 그냥 참고용일 뿐 어떤 정보로써 활용하기에는 100% 장담할 수 없다. (데이터 섹션 이름을 '.code'로 해도 됨!)
+마지막으로 Name 항목에 대해 얘기해 보자. Name 멤버는 C 언어의 문자열처럼 NULL로 끝나지 않는다. 또한 ASCII 값만 와야한다는 제한도 없다. PE 스펙에는 섹션 Name에 대한 어떠한 명시적인 규칙이 없기 때문에 어떠한 값을 넣어도 되고 NULL로 채워도 된다. 따라서 섹션의 Name은 그냥 참고용일 뿐 어떤 정보로써 활용하기에는 100% 장담할 수 없다. (데이터 섹션 이름을 '.code'로 해도 됨!) <br/>
+
+notepad.exe의 IMAGE_DEXTION_HEADER 구조체 배열을 직접 보자.
+
+![13-7](https://user-images.githubusercontent.com/26838115/45024530-32379b00-b074-11e8-9cb9-a4bdb937425c.png)
+
+
+> PE 파일 설명에서 자주 등장하는 이미지(Image)라는 용어를 잘 알아두자. PE 파일이 메모리에 로딩될 때 파일이 그대로 올라가는 것이 아니라, 섹션 헤더에 정의된 대로 섹션 시작 주소, 섹션 크기 등에 맞춰서 올라간다. 따라서 파일에서의 PE와 메모리에서의 PE는 서로 다른 모양을 가진다. 이를 구별하기 위해서 메모리에 로딩된 상태를 이미지라는 용어를 사용해서 구별하는 것이다!
+
+---
+
+## RVA to RAW
+
+섹션 헤더를 잘 이해했다면, PE 파일이 메모리에 로딩되었을 때 각 섹션에서 메모리의 주소(RVA)와 파일 옵셋을 잘 매핑할 수 있어야 한다. 이러한 매핑을 일반적으로 'RVA to RAW'라고 부른다. 방법은 아래와 같다.
+
+1. RVA가 속해 있는 섹션을 찾는다.
+2. 간단한 비례식을 사용해서 파일 옵셋(RAW)을 계산한다.
+
+IMAGE_SECTION_HEADER 구조체에 의하면 비례식은 아래와 같다.
+
+~~~
+RAW - PointerToRawData = RVA - VirtualAddress
+				   RAW = RVA - VirtualAddress + PointerToRawData
+~~~
+
+그럼 이제 퀴즈를 풀어보자.
+
+![13-1](https://user-images.githubusercontent.com/26838115/44969169-d7744580-af86-11e8-8702-d03ce2dc3dc6.png)
+
+**Q1.** RVA = 5000일 때 File Offset = ? <br/><br/>
+
+A1. <br/>
+RVA 5000은 첫 번째 섹션(.text)에 속해 있음(ImageBase 01000000를 고려함). <br/>
+RAW = 5000(RVA) - 1000(VirtualAddres) + 400(PointerToRawData) = 4400
+
+**Q2.** RVA = ABA8일 때 File Offset = ? <br/><br/>
+
+A2. <br/>
+
+해당 RVA 값이 속해 있는 섹션은 두 번째 섹션(.data)이다. <br/>
+RAW = ABA8(RVA) - 9000(VA) + 7C00(PointerToRawData) = 97A8 (X) <br/>
+계산 결과로 나온 옵셋은 세 번째 섹션에 속해 있다. RVA는 두 번째 섹션이고, RAW는 세 번째 섹션이라면 말이 안 된다! 따라서 이 경우에는 "해당 RVA(ABA8)에 대한 RAW값은 정의할 수 없다"고 해야 한다. 이런 이상한 결과가 나온 이유는 위 경우에 두 번째 섹션의 VirtualSize 값이 SizeOfRawData 값보다 크기 때문이다.
+
+---
+
+## IAT (Important Address Table)
+
+IAT란 쉽게 말해서 프로그램이 어떤 라이브러리에서 어떤 함수를 사용하고 있는지를 기술한 테이블이다.
+
+- **DLL**
+
+IAT를 알아보기에 앞서 Windows OS의 근간을 이루는 DLL(Dynamic Lined Library) 개념을 짚고 넘어가자. DLL은 우리말로 '동적 연결 라이브러리'라고 한다. <br/>
+
+이는 16비트 DOS 시절, 예를 들어 C 언어에서 printf() 함수를 사용할 때 컴파일러는 C 라이브러리에서 해당 함수의 binary 코드를 그대로 가져와서 프로그램에 삽입시켰다. 즉 실행 파일에 printf() 함수의 바이너리 코드를 가지고 있는 것인데, 이것이 매우 비효율적이었으므로 DLL 개념이 탄생했다(이 시기에는 그냥 'Library'만 존재함 ~~암흑의 시기~~). <br/>
+
+- 프로그램에 라이브러리를 포함시키지 말고 별도의 파일(DLL)로 구성하여 필요할 때 마다 불러 쓰자.
+
+- 일단 한 번 로딩된 DLL의 코드, 리소스는 Memory Mapping 기술로 여러 Process에서 공유해 쓰자.
+
+- 라이브러리가 업데이트되었을 때 해당 DLL 파일만 교체하면 되니 쉽고 편해서 좋다.
+
+실제 DLL 로딩 방식은 2가지이다. 프로그램에서 사용되는 순간에 로딩하고 사용이 끝나면 메모리에서 해제되는 방법(Explicit Linking)과 프로그램 시작할 때 같이 로딩되어 프로그램 종료할 때 메모리에서 해제되는 방법(Implicit Linking)이 있다. IAT는 바로 Implicit Linking에 대한 메커니즘을 제공하는 역할을 한다. IAT의 확인을 위해 OllyDbg로 notepad.exe를 열어보자.
+
+![13-8](https://user-images.githubusercontent.com/26838115/45028505-51d4c080-b080-11e8-9b69-9f1b471484d3.png)
+
+위 그림은 knernel32.dll의 CreateFileW를 호출하는 코드가 나와 있다. CreateFileW를 호출할 때 직접 호출하지 않고 01001104 주소에 있는 값을 가져와서 호출한다(모든 API 호출은 이런 방식으로 되어 있다). <br/>
+
+01001104 주소는 notepad.exe에서 '.text' 섹션의 메모리 영역이다(더 정확히는 IAT 메모리 영역). 01001104 주소의 값은 7C8107F0이며, 7C8107F0 주소가 바로 notepad.exe 프로세스 메모리에 로딩된 kernel32.dll의 CreateFileW 함수 주소입니다. 물론 이렇게 쓰면 되지 않냐는 의문이 생길 수도 있다.
+
+> CALL 7C810F0
+
+하지만 이건 앞에서 설명했던 DOS 시절의 방식이다! <br/>
+
+notepad.exe 제작자가 프로그램을 컴파일(생성)하는 순간에는 이 notepad.exe 프로그램이 어떤 Windows(Xp, 7 등), 어떤 언어(KOR, ENG 등), 어떤 Service Pack에서 실행될지 알 수 없다. 위에서 열거한 모든 환경에서 kernel32.dll의 버전이 달라지고, CreateFileW 함수의 위치(주소)가 달라진다. CreateFileW 함수 호출을 보장하기 위해서 컴파일러는 CreateFileW의 실제 주소가 저장될 위치(01001104)를 준비하고 CALL DWORD PTR DS:[1001104] 형식의 명령어를 적어두기만 한다. 그러다 파일이 실행되는 순간 PE 로더가 01001104의 위치에 CreateFileW의 주소를 입력해 준다. <br/>
+
+컴파일러가 CALL 7C8107F0라고 쓰지 못하는 또 다른 이유는 DLL Relocation 때문이다. 일반적인 DLL 파일의 ImageBase 값은 10000000이다. 예를 들어 어떤 프로그램이 a.dll과 b.dll을 사용한다고 했을 때, PE 로더는 먼저 a.dll을 ImageBase 값인 메모리 10000000에 잘 로딩한다. 그 다음 b.dll을 ImageBase 값인 메모리 1000000에 로딩하려고 보면, 이미 그 주소는 a.dll이 사용하고 있다! 그래서 PE 로더는 다른 비어있는 메모리 공간(ex:3E000000)을 찾아서 b.dll을 로딩시켜 준다. <br/>
+
+이것이 **DLL Relocation**이며 실제 주소를 하드코딩할 수 없는 이유이다. 또한 PE 헤더에서 주소를 나타낼 때 VA를 쓰지 못하고 RVA를 써야 하는 이유이기도 하다.
+
+> DLL은 PE 헤더에 명시된 ImageBase에 로딩된다고 보장할 수 없다. 반면 process 생성 주체가 되는 EXE 파일은 자신의 ImageBase에 정확히 로딩된다(자신만의 가상 메모리 공간을 가지기 때문).
+
+
+- **IMAGE_IMPORT_DESCRIPTOR**
+
+PE 파일은 자신이 어떤 라이브러리를 임포트(Import)하고 있는지 IMAGE_IMPORT_DESCRIPTOR 구조체에 명시하고 있다.
+
+~~~
+typedef struct _IMAGE_IMPORT_DESCRIPTOR {
+    union {
+        DWORD   Characteristics;            // 0 for terminating null import descriptor
+        DWORD   OriginalFirstThunk;         // RVA to original unbound IAT (PIMAGE_THUNK_DATA)
+    } DUMMYUNIONNAME;
+    DWORD   TimeDateStamp;                  // 0 if not bound,
+                                            // -1 if bound, and real date\time stamp
+                                            //     in IMAGE_DIRECTORY_ENTRY_BOUND_IMPORT (new BIND)
+                                            // O.W. date/time stamp of DLL bound to (Old BIND)
+
+    DWORD   ForwarderChain;                 // -1 if no forwarders
+    DWORD   Name;
+    DWORD   FirstThunk;                     // RVA to IAT (if bound this IAT has actual addresses)
+} IMAGE_IMPORT_DESCRIPTOR;
+
+typedef struct _IMAGE_IMPORT_BY_NAME {
+    WORD    Hint;
+    CHAR   Name[1];
+} IMAGE_IMPORT_BY_NAME, *PIMAGE_IMPORT_BY_NAME;
+~~~
+
+일반적인 프로그램에서는 보통 여러 개의 라이브러리를 임포트하기 때문에 라이브러리의 개수만큼 위 구조체의 배열 형식으로 존재하며, 구조체 배열의 마지막은 NULL 구조체로 끝나게 된다. IMAGE_IMPORT_DESCRIPTOR 구조체에서 중요한 멤버는 다음과 같다.
+
+항목 | 의미
+|:----|:----|
+OriginalFirstThunk | INT(Import Name Table)의 주소(RVA)
+Name | Library 이름 문자열의 주소(RVA)
+FirstThunk | IAT(Import Address Table)의 주소(RVA)
+
+> PE 헤더에서 'Table'이라고 하면 '배열'을 뜻한다.
+> 
+> INT와 IAT는 long type(4바이트 자료형) 배열이고 NULL로 끝난다(크기가 따로 명시되어 있지 않다).
+>
+> INT에서 각 원소의 값은 IMAGE_IMPORT_BY_NAME 구조체 포인터이다(IAT도 같은 값을 가지는 경우가 있음).
+>
+> INT와 IAT의 크기는 같아야 한다.
+>
+
+아래 그림은 notepad exe의 kernel32.dll에 대한 IMAGE_IMPORT_DESCRIPTOR 구조를 표시하고 있다.
+
+![13-9](https://user-images.githubusercontent.com/26838115/45029665-64e98f80-b084-11e8-9480-91ad4e36c9b3.png)
+
+
+
+
 
 
 > 위에 올려놓은 구조체들의 코드는 [winnt.h 파일](https://www.codemachine.com/downloads/win80/winnt.h)에서 직접 찾아볼 수 있다!
+
+
+
+
 
 <br/>
 
