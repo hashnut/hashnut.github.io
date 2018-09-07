@@ -56,6 +56,10 @@ UPX 패커의 특징을 이용해서, POPAD 명령어 이후의 JMP문에 BP를 
 
 - 스택에 하드웨어 브레이크 포인트(Hardware Break Point)설치
 
+![15-1](https://user-images.githubusercontent.com/26838115/45200985-57175280-b2ae-11e8-85d5-91f4d9c932bd.png)
+
+> 이 그림에서 스택의 가장 위에 있는 주소로 가면 된다.
+
 PUSHAD 실행 이후, 스택에 "return point"가 적혀있는 스택 주소로 간다(dump로 감). 그후 해당 주소 위치에 하드웨어 BP를 설치하면, 압축이 해제되면서 코드가 실행되고, POPAD가 호출되는 순간에 하드웨어 BP가 설치된 주소를 엑세스하고, 그 때 제어가 멈출 것이다! 그 아래에 OEP로 가는 JMP 명령어를 찾아 볼 수 있다.
 
 
