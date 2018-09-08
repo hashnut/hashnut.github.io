@@ -1,7 +1,7 @@
 ---
 
 layout : single
-title : "Reversecore Issue chap 14 - 실행 압축"
+title : "Reversecore Issue chap 15 - UPX 실행 압축된 notepad.exe 디버깅"
 categories : [Reversing]
 tags : [reversecore]
 comment : true
