@@ -77,8 +77,72 @@ IMAGE_NT_HEADERS \ IMAGE_OPTIONAL_HEADER \ IMAGE_DATA_DIRECTORY[5]
 ![16-4](https://user-images.githubusercontent.com/26838115/45202555-54b7f700-b2b4-11e8-8c31-fa2b0123dbfd.png)
 
 
+- IMAGE_BASE_RELOCATION 구조체
 
+위의 Base Relocation Table에는 하드코딩 주소들의 옵셋(우치)들이 나열되어 있다. 이 테이블만 읽어 내면 하드코딩 주소 옵셋들을 정확히 알아낼 수 있다. Base Relocation Table 은 IMAGE_BASE_RELOCATION 구조체 배열이다. IMAGE_BASE_RELOCATION 구조체 정의는 아래와 같다.
 
+~~~
+//
+// Based relocation format.
+//
+
+typedef struct _IMAGE_BASE_RELOCATION {
+    DWORD   VirtualAddress;
+    DWORD   SizeOfBlock;
+//  WORD    TypeOffset[1];
+} IMAGE_BASE_RELOCATION;
+typedef IMAGE_BASE_RELOCATION UNALIGNED * PIMAGE_BASE_RELOCATION;
+
+//
+// Based relocation types.
+//
+
+#define IMAGE_REL_BASED_ABSOLUTE              0
+#define IMAGE_REL_BASED_HIGH                  1
+#define IMAGE_REL_BASED_LOW                   2
+#define IMAGE_REL_BASED_HIGHLOW               3
+#define IMAGE_REL_BASED_HIGHADJ               4
+#define IMAGE_REL_BASED_MACHINE_SPECIFIC_5    5
+#define IMAGE_REL_BASED_RESERVED              6
+#define IMAGE_REL_BASED_MACHINE_SPECIFIC_7    7
+#define IMAGE_REL_BASED_MACHINE_SPECIFIC_8    8
+#define IMAGE_REL_BASED_MACHINE_SPECIFIC_9    9
+#define IMAGE_REL_BASED_DIR64                 10
+~~~
+
+위 구조체의 첫 멤버 VirtualAddress는 기준 주소(Base Address)이며, 실제로는 RVA 값이다. 두 번째 멤버 SizeOfBlock은 각 단위 블록의 크기를 의미한다. 마지막으로 주석으로 표시된 TypeOffset 배열의 의미는 이 구조체 밑으로 WORD 타입의 배열이 따라 온다는 뜻이다. 그리고 이 배열 항목의 값이 바로 프로그램에 하드코딩된 주소들의 옵셋이다.
+
+만약 VirtualAddress 멤버의 값이 1000이고, SizeOfBlock 멤버의 값이 150이면, TypeOffset 배열의 기준 주소(시작 주소)는 RVA 1000이며, 블록의 전체 크기는 150이다(기준 주소별로 이러한 블록이 배열 형태로 존재). 블록의 끝은 0으로 표시한다. TypeOffset 값은 2바이트(16비트) 크기를 가지며 Type(4비트)과 Offset(12비트)이 합쳐진 형태이다. 예를 들어 TypeOffset 값이 3420이라면, 아래와 같이 표기할 수 있다.
+
+Type (4비트) | Offset (12비트)
+|:---|:----|
+3 |420
+
+최상위 4비트는 Type으로 사용된다. PE 파일에서 일반적인 값은 3(IMAGE_REL_BASED-HIGHLOW)이고, 64비트용 PE+ 파일에서는 A(IMAGE_REL_BASED_DIR64)이다.
+
+TypeOffset의 하위 12비트가 진짜 Offset을 의미한다. 이 Offset 값은 VirtualAddress 기준의 옵셋이다. 따라서 프로그램에서 하드코딩 주소가 있는 옵셋은 다음과 같이 계산된다.
+
+VirtualAddress(1000) + Offset(420) = 1420(RVA)
+
+---
+
+### 실습
+
+notepad.exe가 ImageBase(01000000)에 로딩괴지 않고 00AF0000 주소에 로딩되었다고 가정해 보자.
+
+1. 프로그램에서 하드코딩된 주소 위치를 찾는다.
+
+아까 예시에서 구한 RVA 1420을 이용, PE View에서 RVA 1420의 값을 구한다(하드코딩된 주소 010010C4가 들어 있다고 하자).
+
+2. 값을 읽은 후 ImageBase만큼 뺀다(VA -> RVA).
+
+010010C4 - 01000000 = 000010C4
+
+3. 실제 로딩된 주소를 더한다(RVA -> VA)
+
+000010C4 + 00AF0000 = 00AF10C4
+
+PE 로더는 프로그램 내의 하드코딩된 주소(010010C4)를 위와 같은 과정을 거쳐 실제 로딩된 메모리 주소에 맞게 보정을 한 값(00AF10C4)을 같은 위치에 덮어쓴다. 이 과정을 하나의 IMAGE_BASE_RELOCATION 구조체의 모든 TypeOffset에 대해 반복하면 RVA 1000~2000 주소 영역에 해당되는 모든 하드코딩 주소에 대해 PE 재배치 작업이 수행된 것이다. TypeOffset 값이 0이 되면 하나의 IMAGE_BASE_RELOCATION 구조체가 끝난다. Relocation Table은 NULL 구조체로 끝난다.
 
 
 
