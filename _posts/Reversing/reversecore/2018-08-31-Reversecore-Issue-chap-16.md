@@ -40,7 +40,7 @@ B.dll이 A.dll과 같은 주소에 로딩을 시작하면, 재배치가 이루�
 예전에는 프로세스가 생성될 때 EXE 파일이 가장 먼저 메모리에 로딩되기 때문에 EXE에서는 재배치를 고려할 필요가 없었다. 그러나 Vista 이후에는 보안 강화를 위해 **ASLR(Address Space Layout Ramdomizatoin)** 기능이 추가되었다. 이는 EXE 파일이 실행될 때마다 랜덤한 주소에 로딩하는 것이다. 
 
 
-> ASLR 기능은 DLL/SYS 파일에도 적용되는 개념이다. MS 에서는 각 OS의 주요 시스템 DLL들에 대해 버전별로 각자 고유한 ImageBase를 부여하였다. 따라서 한 시스템에서 nernel32.dll, user32.dll 등은 자신만의 고유 ImageBase에 로딩되기 때문에 실제로 시스템 DLL들끼리는 Relocation이 발생할 일이 없습니다.
+> ASLR 기능은 DLL/SYS 파일에도 적용되는 개념이다. MS 에서는 각 OS의 주요 시스템 DLL들에 대해 버전별로 각자 고유한 ImageBase를 부여하였다. 따라서 한 시스템에서 nernel32.dll, user32.dll 등은 자신만의 고유 ImageBase에 로딩되기 때문에 실제로 시스템 DLL들끼리는 Relocation이 발생할 일이 없다.
 
 ---
 
