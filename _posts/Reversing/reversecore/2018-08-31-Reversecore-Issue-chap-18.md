@@ -74,6 +74,22 @@ IMAGE_FILE_HEADER.SizeOfOptionalHeader의 값을 변경한다. 이 값을 조작
 
 IMAGE_OPTIONAL_HEADER는 말 그대로 '구조체'이기 때문에 PE 32 파일 포맷에서 크기는 이미 E0로 결정되어 있다. 이때, PE File Format 설계자들이 IMAGE_OPTIONAL_HEADER 구조체의 크기를 따로 입력하게 한 이유는, PE 파일의 형태에 따라 각각 다른 IMAGE_OPTIONAL_HEADER 형태의 구조체를 바꿔 낄 수 있도록 하기 위해서이다. 따라서, IMAGE_OPTIONAL_HEADER의 종류가 여러 개이므로 구조체의 크기를 따로 입력할 필요가 있는 것이다(예: 64비트용 PE32+의 IMAGE_OPTIONAL_HEADER 구조체 크기는 F0).
 
+SizeOfOptionalHeader의 또 다른 의미는 섹션 헤더(IMAGE_SECTION_HEADER)의 시작 옵셋을 결정하는 것이다.
+
+PE 헤더를 그냥 보면 IMAGE_OPTIONAL_HEADER에 이어서 IMAGE_SECTION_HEADER가 나타나는 듯이 보인다. 하지만 실제로는 IMAGE_OPTIONAL_HEADER 시작 옵셋에 SizeOfOptionalHeader 값을 더한 위치(옵셋)부터 IMAGE_SECTION_HEADER가 나타난다.
+
+UPack에서는 SizeOfOptionalHeader의 값을 148로 설정함으로써 IMAGE_SECTION_HEADER가 옵셋 170부터 시작하게 된다(IMAGE_OPTIONAL_HEADER 시작 옵셋(28) + SizeOfOptionalHeader(148) = 170).
+
+UPack은 왜 SizeOfOptionalHeader 값을 변경했을까? SizeOfOptionalHeader 값을 늘리면 IMAGE_OPTIONAL_HEADER와 IMAGE_SECTION_HEADER 사이에 추가적인 공간을 확보할 수 있는데, 바로 이 영역에 디코딩 코드를 추가 하기 위함이다.
+
+![3](https://user-images.githubusercontent.com/26838115/45294075-2006a280-b535-11e8-894e-59f7df74fac9.png)
+
+> 디코딩 코드
+
+---
+
+### IMAGE_OPTIONAL_HEADER.NumberOfRvaAndSizes
+
 
 
 
