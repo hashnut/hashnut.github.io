@@ -1,7 +1,7 @@
 ---
 
 layout : single
-title : "Reversecore Issue chap 17 - 실행 파일에서 .reloc 섹션 제거하기"
+title : "Reversecore chap 17 - 실행 파일에서 .reloc 섹션 제거하기"
 categories : [Reversing]
 tags : [reversecore]
 comment : true

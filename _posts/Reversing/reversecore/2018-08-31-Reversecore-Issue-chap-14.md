@@ -1,7 +1,7 @@
 ---
 
 layout : single
-title : "Reversecore Issue chap 14 - 실행 압축"
+title : "Reversecore chap 14 - 실행 압축"
 categories : [Reversing]
 tags : [reversecore]
 comment : true

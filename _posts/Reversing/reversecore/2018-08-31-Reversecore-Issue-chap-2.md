@@ -1,7 +1,7 @@
 ---
 
 layout : single
-title : "Reversecore Issue chap 2 - Hello World! 리버싱"
+title : "Reversecore chap 2 - Hello World! 리버싱"
 categories : [Reversing]
 tags : [reversecore]
 comment : true

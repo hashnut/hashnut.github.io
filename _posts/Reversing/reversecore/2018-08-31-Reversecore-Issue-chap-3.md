@@ -1,7 +1,7 @@
 ---
 
 layout : single
-title : "Reversecore Issue chap 3 - 리틀 엔디언 표기법"
+title : "Reversecore chap 3 - 리틀 엔디언 표기법"
 categories : [Reversing]
 tags : [reversecore]
 comment : true

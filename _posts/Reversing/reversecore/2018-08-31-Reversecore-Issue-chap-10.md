@@ -1,7 +1,7 @@
 ---
 
 layout : single
-title : "Reversecore Issue chap 10 - 함수 호출 규약"
+title : "Reversecore chap 10 - 함수 호출 규약"
 categories : [Reversing]
 tags : [reversecore]
 comment : true

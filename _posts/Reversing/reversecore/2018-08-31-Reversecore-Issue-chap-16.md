@@ -1,7 +1,7 @@
 ---
 
 layout : single
-title : "Reversecore Issue chap 16 - Base Relocation Table"
+title : "Reversecore chap 16 - Base Relocation Table"
 categories : [Reversing]
 tags : [reversecore]
 comment : true

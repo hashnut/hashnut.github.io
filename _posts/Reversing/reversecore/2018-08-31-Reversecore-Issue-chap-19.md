@@ -1,7 +1,7 @@
 ---
 
 layout : single
-title : "Reversecore Issue chap 19 - UPack 디버깅, OEP 찾기!"
+title : "Reversecore chap 19 - UPack 디버깅, OEP 찾기!"
 categories : [Reversing]
 tags : [reversecore]
 comment : true

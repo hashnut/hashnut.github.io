@@ -1,7 +1,7 @@
 ---
 
 layout : single
-title : "Reversecore Issue chap 8 - abex' crackme #2"
+title : "Reversecore chap 8 - abex' crackme #2"
 categories : [Reversing]
 tags : [reversecore, unsolved]
 comment : true

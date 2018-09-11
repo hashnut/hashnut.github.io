@@ -1,7 +1,7 @@
 ---
 
 layout : single
-title : "Reversecore Issue chap 18 - UPack PE 헤더 상세 분석"
+title : "Reversecore chap 18 - UPack PE 헤더 상세 분석"
 categories : [Reversing]
 tags : [reversecore]
 comment : true

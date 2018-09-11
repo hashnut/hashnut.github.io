@@ -1,7 +1,7 @@
 ---
 
 layout : single
-title : "Reversecore Issue chap 4 - IA-32 Register 기본 설명"
+title : "Reversecore chap 4 - IA-32 Register 기본 설명"
 categories : [Reversing]
 tags : [reversecore]
 comment : true
