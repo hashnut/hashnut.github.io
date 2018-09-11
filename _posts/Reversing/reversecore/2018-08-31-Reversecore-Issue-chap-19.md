@@ -1,7 +1,7 @@
 ---
 
 layout : single
-title : "Reversecore Issue chap 18 - UPack PE 헤더 상세 분석"
+title : "Reversecore Issue chap 19 - UPack 디버깅, OEP 찾기!"
 categories : [Reversing]
 tags : [reversecore]
 comment : true
