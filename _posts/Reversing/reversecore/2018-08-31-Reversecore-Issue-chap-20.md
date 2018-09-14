@@ -79,6 +79,10 @@ OllyDbg assemble 과정에서, Label expected라는 것만 뜨고 어셈블이 �
 
 [Stackoverflow에 질문을 올려놓았다.](https://stackoverflow.com/questions/52330225/ollydbg-label-expected-issue)
 
+-> 그래서 일단은 binary-edit-Hex값을 직접 조절해서 Assemble을 완료하였다.
+
+![image](https://user-images.githubusercontent.com/26838115/45545878-7c7c0180-b856-11e8-8f0b-6345ba9ffa51.png)
+
 
 
 
