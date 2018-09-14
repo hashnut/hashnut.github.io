@@ -68,6 +68,17 @@ comment : true
 
 실습예제가 책에 소개된 내용과 달라 따라가기가 힘들다. 일단 기법 내용을 읽었으니 다시 패치해봐야 함.
 
+---
+
+
+### Issue #2: 
+
+OllyDbg assemble 과정에서, Label expected라는 것만 뜨고 어셈블이 안되는데... 찾아봐도 해결책이 나오지 않는다.
+
+![2](https://user-images.githubusercontent.com/26838115/45544924-aa137b80-b853-11e8-8c48-8f5360f24be1.png)
+
+[Stackoverflow에 질문을 올려놓았다.](https://stackoverflow.com/questions/52330225/ollydbg-label-expected-issue)
+
 
 
 
