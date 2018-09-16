@@ -40,23 +40,33 @@ comment : true
 
 - **TEST** : 논리 비교 (Logical Compare)
 
-  bit-wise logical 'AND' 연산과 동일 (operand 값이 변경되지 않고 EFLAGS 레지스터만 변경됨)<br/><br/>
-  두 operand 중에 하나가 0이면 AND 연산 결과는 0 -> ZF = 1로 세팅됨.<br/><br/>
-  예를 하나 보도록 하자.<br/><br/>
+bit-wise logical 'AND' 연산과 동일(operand 값이 변경되지 않고 EFLAGS 레지스터만 변경됨).
 
-	  TEST AX, AX
-	  JE 403408
+두 operand 중에 하나가 0이면 AND 연산 결과는 0 -> ZF = 1로 세팅됨.
 
-  위 어셈블리 코드를 C 언어로 해석하면 아래와 같다. <br/>
+예를 하나 보도록 하자.
 
-	  If(AX == 0)
-	      goto 403408
-  <br/>
-- **JE** : 조건 분기 (Jump if equal)
+~~~
+TEST AX, AX
+JE 403408
+~~~
 
-  ZF = 1 이면 점프
+위 어셈블리 코드를 C 언어로 해석하면 아래와 같다. 
 
-- **LEA** : Load Effective Address
+~~~
+If(AX == 0)
+  goto 403408
+~~~
+
+<br/>
+
+**JE** : 조건 분기 (Jump if equal)
+
+ZF = 1 이면 점프
+
+<br/>
+
+**LEA** : Load Effective Address
 
 해당 명령어는 사실 **MOV**와 비슷한 기능을 한다.
 
