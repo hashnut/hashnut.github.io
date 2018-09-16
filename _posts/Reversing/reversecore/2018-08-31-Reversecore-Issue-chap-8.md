@@ -27,8 +27,9 @@ comment : true
 
 5. **EP**(EntryPoint) 주변의 코드를 한 번 보자.
 
+  주소 | Hex | Assembly Code | Comment
+  |:------|:--------|:---------|:--------|
 	00401232 | FF25 A0104000 | JMP DWORD PTR DS:[4010A0] | ; MSVBV60.ThunRTMain
-	|:------|:--------|:---------|:--------|
 	00401238 | 68 141E4000 | PUSH 401E14 | ; = EP
 	0040123D | E8 F0FFFFFF | CALL 00401232 | ; JMP.&MSVBVM60.#100
 

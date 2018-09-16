@@ -3,7 +3,7 @@
 layout : single
 title : "Reversecore chap 13 - PE File Format"
 categories : [Reversing]
-tags : [reversecore]
+tags : [reversecore, unsolved]
 comment : true
 
 ---

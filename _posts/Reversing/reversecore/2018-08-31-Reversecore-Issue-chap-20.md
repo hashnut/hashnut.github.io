@@ -3,7 +3,7 @@
 layout : single
 title : "Reversecore chap 20 - 인라인 패치 실습"
 categories : [Reversing]
-tags : [reversecore]
+tags : [reversecore, unsolved]
 comment : true
 
 ---
@@ -84,7 +84,7 @@ OllyDbg assemble 과정에서, Label expected라는 것만 뜨고 어셈블이 �
 ![image](https://user-images.githubusercontent.com/26838115/45545878-7c7c0180-b856-11e8-8f0b-6345ba9ffa51.png)
 
 
-
+... 려고 했는데, 그것도 문자열 값만 대입하려 하니 어셈블이 되지 않는다. 일단 인라인 패치 실습이 잘 이루어지지 않음...
 
 
 
