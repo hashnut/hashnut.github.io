@@ -4,4 +4,4 @@
 
 ### 아래 주소로 블로그 이전했습니다.
 
-## https://iamfoodie.tistory 
+## https://iamfoodie.tistory.com 
